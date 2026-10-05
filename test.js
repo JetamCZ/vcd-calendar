@@ -1,0 +1,19 @@
+const assert = require('assert');
+const fs = require('fs');
+const { parse, ical } = require('./server');
+
+const [ev] = parse(fs.readFileSync(__dirname + '/fixture.html', 'utf8'), 2026, 10);
+assert.equal(ev.id, '6621');
+assert.equal(ev.scene, 'Městské divadlo');
+assert.deepEqual(ev.groups, ['N']);
+assert.deepEqual(parse(fs.readFileSync(__dirname + '/fixture.html', 'utf8').replace('<p>', '<p>50% slevu pro studenty'), 2026, 10)[0].groups, ['N', 'STUDENT']);
+assert.equal(ev.title, 'P. Abraham – M. Mejzlíková / HOTEL MODRÁ HVĚZDA');
+assert.equal(ev.start.toISOString(), new Date(2026, 9, 1, 18, 0).toISOString());
+assert.equal(ev.end.getHours(), 20);
+assert.equal(ev.url, 'https://www.vcd.cz/inscenace/hotel-modra-hvezda');
+assert.match(ical([ev]), /DTSTART;TZID=Europe\/Prague:20261001T180000\r\n/);
+assert.match(ical([ev], { allDay: true }), /DTSTART;VALUE=DATE:20261001\r\nDTEND;VALUE=DATE:20261002\r\nSUMMARY:18:00 P\. Abraham/);
+assert.match(ical([ev], { prefix: 'DIVADLO-' }), /SUMMARY:DIVADLO-P\. Abraham/);
+assert.match(ical([ev], { noAuthor: true }), /SUMMARY:HOTEL MODRÁ HVĚZDA \(N\)/);
+assert.match(ical([ev]), /LOCATION:Městské divadlo\\, U Divadla 50\\, 530 02 Pardubice I - Zelené Předměstí\\, Česko\r\n/);
+console.log('ok');

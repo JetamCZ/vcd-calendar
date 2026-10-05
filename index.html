@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VČD kalendář</title>
+<style>
+  body { font: 16px/1.5 system-ui, sans-serif; max-width: 640px; margin: 2rem auto; padding: 0 1rem; color: #222; }
+  fieldset { border: 1px solid #ccc; border-radius: 6px; margin: 0 0 1rem; }
+  label { display: inline-block; margin: .2rem .8rem .2rem 0; }
+  input[type=text], input[type=number] { padding: .3rem .5rem; font: inherit; }
+  output { display: block; word-break: break-all; background: #f4f4f4; padding: .75rem; border-radius: 6px; font-family: monospace; margin: .5rem 0; }
+  button { font: inherit; padding: .4rem .9rem; cursor: pointer; }
+  small { color: #666; }
+</style>
+</head>
+<body>
+<h1>VČD kalendář</h1>
+<p>Vyber předplatné a nastavení, výslednou adresu přidej do kalendáře jako odběr (Google Calendar: „Z adresy URL“, Apple: „Nový odběr kalendáře“).</p>
+
+<form id="f">
+  <fieldset>
+    <legend>Skupiny předplatného</legend>
+    <div id="cats"><small>Načítám…</small></div>
+    <label>Další (čárkou): <input type="text" name="extra" placeholder="K1, P"></label>
+  </fieldset>
+  <fieldset>
+    <legend>Nastavení</legend>
+    <label>Měsíců dopředu: <input type="number" name="months" value="6" min="1" max="24"></label><br>
+    <label><input type="checkbox" name="allday"> Celodenní událost (čas v názvu)</label><br>
+    <label><input type="checkbox" name="noauthor"> Bez autora v názvu</label><br>
+    <label>Prefix názvu: <input type="text" name="prefix" placeholder="DIVADLO - "></label>
+  </fieldset>
+</form>
+
+<h2>Adresa kalendáře</h2>
+<output id="url"></output>
+<button id="copy" type="button">Kopírovat</button>
+<a id="json" target="_blank">Náhled JSON</a>
+
+<script>
+  const f = document.getElementById('f'), out = document.getElementById('url'), json = document.getElementById('json');
+  const base = location.origin;
+
+  function build() {
+    const p = new URLSearchParams();
+    const cats = [...f.querySelectorAll('input[name=cat]:checked')].map((c) => c.value)
+      .concat(f.extra.value.split(',').map((s) => s.trim()).filter(Boolean));
+    if (cats.length) p.set('cat', cats.join(','));
+    if (f.months.value !== '6') p.set('months', f.months.value);
+    if (f.allday.checked) p.set('allday', '1');
+    if (f.noauthor.checked) p.set('noauthor', '1');
+    if (f.prefix.value) p.set('prefix', f.prefix.value);
+    const q = p.toString() ? '?' + p : '';
+    out.textContent = base + '/vcd-ical' + q;
+    json.href = base + '/vcd-json' + q;
+  }
+
+  f.addEventListener('input', build);
+  document.getElementById('copy').onclick = () => navigator.clipboard.writeText(out.textContent);
+
+  fetch('/vcd-json?months=6').then((r) => r.json()).then((events) => {
+    const groups = [...new Set(events.flatMap((e) => e.groups))].sort();
+    document.getElementById('cats').innerHTML = groups.map((g) =>
+      `<label><input type="checkbox" name="cat" value="${g}"> ${g}</label>`).join('');
+  }).catch(() => { document.getElementById('cats').innerHTML = '<small>Skupiny se nepodařilo načíst, zadej je ručně.</small>'; });
+
+  build();
+</script>
+</body>
+</html>
