@@ -90,6 +90,10 @@ async function handler(req, res) {
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     return res.end(fs.readFileSync(__dirname + '/index.html'));
   }
+  if (url.pathname === '/logo.png') {
+    res.writeHead(200, { 'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=86400' });
+    return res.end(fs.readFileSync(__dirname + '/logo.png'));
+  }
   const json = url.pathname === '/vcd-json';
   if (!json && url.pathname !== '/vcd-ical') return res.writeHead(404).end();
   const cats = (url.searchParams.get('cat') ?? '').split(',').map((c) => c.trim().toUpperCase()).filter(Boolean);

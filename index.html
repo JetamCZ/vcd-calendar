@@ -5,38 +5,91 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>VČD kalendář</title>
 <style>
-  body { font: 16px/1.5 system-ui, sans-serif; max-width: 640px; margin: 2rem auto; padding: 0 1rem; color: #222; }
-  fieldset { border: 1px solid #ccc; border-radius: 6px; margin: 0 0 1rem; }
-  label { display: inline-block; margin: .2rem .8rem .2rem 0; }
-  input[type=text], input[type=number] { padding: .3rem .5rem; font: inherit; }
-  output { display: block; word-break: break-all; background: #f4f4f4; padding: .75rem; border-radius: 6px; font-family: monospace; margin: .5rem 0; }
-  button { font: inherit; padding: .4rem .9rem; cursor: pointer; }
-  small { color: #666; }
+  :root { --bg: #0b0b0c; --panel: #161618; --line: #2a2a2e; --text: #e3dfd4; --muted: #a2a2a3; --red: #a31733; --red-hi: #be1430; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.55 'Lucida Grande', Tahoma, Verdana, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  header { border-bottom: 3px solid var(--red); background: #000; }
+  .wrap { max-width: 680px; margin: 0 auto; padding: 16px; }
+  header .wrap { display: flex; align-items: center; gap: 18px; padding: 22px 16px; }
+  header img { width: 56px; height: auto; }
+  header h1 { margin: 0; font-size: 26px; font-weight: 600; letter-spacing: .02em; text-transform: uppercase; }
+  header p { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+  .notice { background: var(--red); color: #fff; font-size: 14px; }
+  .notice .wrap { padding: 8px 16px; }
+  .notice a { color: #fff; }
+  main { padding: 28px 0 48px; }
+  p.lead { color: var(--muted); margin: 0 0 24px; }
+  fieldset { border: 1px solid var(--line); background: var(--panel); border-radius: 4px; padding: 16px 18px 14px; margin: 0 0 18px; }
+  legend { padding: 0 8px; color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: .12em; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+  .chips label { cursor: pointer; }
+  .chips input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .chips span { display: inline-block; padding: 5px 13px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); font-size: 14px; transition: .15s; }
+  .chips input:checked + span { background: var(--red); border-color: var(--red); color: #fff; }
+  .chips input:focus-visible + span { outline: 2px solid var(--red-hi); outline-offset: 2px; }
+  .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 8px 0; }
+  .row label { flex: 1 1 auto; }
+  input[type=text], input[type=number] { font: inherit; color: var(--text); background: #000; border: 1px solid var(--line); border-radius: 3px; padding: 7px 10px; }
+  input[type=text] { width: 100%; }
+  input[type=number] { width: 5.5em; }
+  input:focus { outline: none; border-color: var(--red); }
+  input[type=checkbox] { accent-color: var(--red); width: 17px; height: 17px; margin: 0; }
+  .check { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  small { color: var(--muted); font-size: 13px; }
+  fieldset p { margin: -4px 0 14px; }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin: 28px 0 10px; font-weight: 600; }
+  output { display: block; word-break: break-all; background: #000; border: 1px solid var(--line); border-left: 3px solid var(--red); padding: 12px 14px; border-radius: 3px; font: 14px/1.5 ui-monospace, Menlo, Consolas, monospace; margin: 0 0 12px; }
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  button, .btn { font: inherit; font-size: 14px; padding: 9px 18px; border-radius: 3px; border: 1px solid var(--red); background: var(--red); color: #fff; cursor: pointer; text-decoration: none; text-transform: uppercase; letter-spacing: .06em; }
+  button:hover, .btn:hover { background: var(--red-hi); border-color: var(--red-hi); }
+  .btn.ghost { background: transparent; color: var(--text); border-color: var(--line); }
+  .btn.ghost:hover { border-color: var(--muted); background: transparent; }
+  footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); padding: 18px 0; }
+  footer a { color: var(--text); }
 </style>
 </head>
 <body>
-<h1>VČD kalendář</h1>
-<p>Vyber předplatné a nastavení, výslednou adresu přidej do kalendáře jako odběr (Google Calendar: „Z adresy URL“, Apple: „Nový odběr kalendáře“).</p>
+<header>
+  <div class="wrap">
+    <img src="/logo.png" alt="">
+    <div>
+      <h1>VČD kalendář</h1>
+      <p>Program Východočeského divadla Pardubice ve tvém kalendáři</p>
+    </div>
+  </div>
+</header>
+<div class="notice"><div class="wrap">Neoficiální import událostí z <a href="https://www.vcd.cz/program/" target="_blank" rel="noopener">vcd.cz</a>. Projekt není provozován divadlem, data se mohou lišit od oficiálního programu.</div></div>
 
-<form id="f">
-  <fieldset>
-    <legend>Skupiny předplatného</legend>
-    <div id="cats"><small>Načítám…</small></div>
-    <label>Další (čárkou): <input type="text" name="extra" placeholder="K1, P"></label>
-  </fieldset>
-  <fieldset>
-    <legend>Nastavení</legend>
-    <label>Měsíců dopředu: <input type="number" name="months" value="6" min="1" max="24"></label><br>
-    <label><input type="checkbox" name="allday"> Celodenní událost (čas v názvu)</label><br>
-    <label><input type="checkbox" name="noauthor"> Bez autora v názvu</label><br>
-    <label>Prefix názvu: <input type="text" name="prefix" placeholder="DIVADLO - "></label>
-  </fieldset>
-</form>
+<main class="wrap">
+  <p class="lead">Vyber skupiny předplatného a nastavení. Výslednou adresu přidej do kalendáře jako odběr: Google Calendar „Z adresy URL“, Apple Kalendář „Nový odběr kalendáře“.</p>
 
-<h2>Adresa kalendáře</h2>
-<output id="url"></output>
-<button id="copy" type="button">Kopírovat</button>
-<a id="json" target="_blank">Náhled JSON</a>
+  <form id="f">
+    <fieldset>
+      <legend>Skupiny předplatného</legend>
+      <div class="chips" id="cats"><small>Načítám skupiny z programu…</small></div>
+      <p><small>STUDENT není předplatné, ale představení, u kterých divadlo nabízí studentskou či seniorskou slevu.</small></p>
+      <label><small>Další skupiny (oddělené čárkou)</small><input type="text" name="extra" placeholder="K1, P"></label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Nastavení</legend>
+      <div class="row"><label for="months">Měsíců dopředu</label><input id="months" type="number" name="months" value="6" min="1" max="24"></div>
+      <div class="row"><label class="check"><input type="checkbox" name="allday"> Celodenní událost, čas představení v názvu</label></div>
+      <div class="row"><label class="check"><input type="checkbox" name="noauthor"> Bez autora v názvu</label></div>
+      <div class="row"><label><small>Prefix názvu události</small><input type="text" name="prefix" placeholder="DIVADLO - "></label></div>
+    </fieldset>
+  </form>
+
+  <h2>Adresa kalendáře</h2>
+  <output id="url"></output>
+  <div class="actions">
+    <button id="copy" type="button">Kopírovat</button>
+    <a id="json" class="btn ghost" target="_blank">Náhled JSON</a>
+    <small id="copied" hidden>Zkopírováno</small>
+  </div>
+</main>
+
+<footer><div class="wrap">Zdroj dat: <a href="https://www.vcd.cz" target="_blank" rel="noopener">vcd.cz</a></div></footer>
 
 <script>
   const f = document.getElementById('f'), out = document.getElementById('url'), json = document.getElementById('json');
@@ -57,13 +110,18 @@
   }
 
   f.addEventListener('input', build);
-  document.getElementById('copy').onclick = () => navigator.clipboard.writeText(out.textContent);
+  document.getElementById('copy').onclick = async () => {
+    await navigator.clipboard.writeText(out.textContent);
+    const c = document.getElementById('copied');
+    c.hidden = false;
+    setTimeout(() => (c.hidden = true), 1500);
+  };
 
   fetch('/vcd-json?months=6').then((r) => r.json()).then((events) => {
     const groups = [...new Set(events.flatMap((e) => e.groups))].sort();
     document.getElementById('cats').innerHTML = groups.map((g) =>
-      `<label><input type="checkbox" name="cat" value="${g}"> ${g}</label>`).join('');
-  }).catch(() => { document.getElementById('cats').innerHTML = '<small>Skupiny se nepodařilo načíst, zadej je ručně.</small>'; });
+      `<label><input type="checkbox" name="cat" value="${g}"><span>${g}</span></label>`).join('');
+  }).catch(() => { document.getElementById('cats').innerHTML = '<small>Skupiny se nepodařilo načíst, zadej je ručně níže.</small>'; });
 
   build();
 </script>
