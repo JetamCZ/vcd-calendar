@@ -1,6 +1,7 @@
 const assert = require('assert');
 const fs = require('fs');
-const { parse, ical } = require('./server');
+const { parseProgram: parse } = require('../src/parser');
+const { buildCalendar: ical } = require('../src/ical');
 
 const [ev] = parse(fs.readFileSync(__dirname + '/fixture.html', 'utf8'), 2026, 10);
 assert.equal(ev.id, '6621');
@@ -16,4 +17,5 @@ assert.match(ical([ev], { allDay: true }), /DTSTART;VALUE=DATE:20261001\r\nDTEND
 assert.match(ical([ev], { prefix: 'DIVADLO-' }), /SUMMARY:DIVADLO-P\. Abraham/);
 assert.match(ical([ev], { noAuthor: true }), /SUMMARY:HOTEL MODRÁ HVĚZDA \(N\)/);
 assert.match(ical([ev]), /LOCATION:Městské divadlo\\, U Divadla 50\\, 530 02 Pardubice I - Zelené Předměstí\\, Česko\r\n/);
+assert.match(ical([{ ...ev, description: 'a;b' }]), /DESCRIPTION:a\\;b\r\n/);
 console.log('ok');

@@ -3,12 +3,13 @@
 iCal feed programu Východočeského divadla Pardubice (vcd.cz) filtrovaný podle skupin předplatného.
 Přidáš si URL jako odběr do kalendáře a představení tvého předplatného se objeví sama.
 
-Bez závislostí, Node 18+.
+Bez runtime závislostí, Node 18+.
 
 ## Spuštění
 
 ```sh
 npm start          # http://localhost:3000, port přes PORT=...
+npm run dev        # totéž s nodemon, restart při změně src/ a public/
 npm test
 ```
 
@@ -52,6 +53,10 @@ z webu, takže se při aktualizaci odběru události neduplikují.
 
 ## Soubory
 
-- `server.js` – celá aplikace
-- `index.html` – formulář na `/`
-- `test.js`, `fixture.html` – test parseru na reálném bloku HTML
+- `src/config.js` – konfigurace (URL webu, cache, adresy scén, limity parametrů)
+- `src/parser.js` – parsování HTML programu, regexy pro markup vcd.cz na jednom místě
+- `src/vcd.js` – stahování měsíců z vcd.cz s cache v paměti
+- `src/ical.js` – sestavení iCal feedu
+- `src/server.js` – HTTP server a routy
+- `public/` – formulář na `/` a logo
+- `test/` – test parseru na reálném bloku HTML (`fixture.html`)
